@@ -59,6 +59,9 @@ import org.pitest.mutationtest.engine.gregor.mutators.experimental.RemoveIncreme
 import org.pitest.mutationtest.engine.gregor.mutators.experimental.RemoveSwitchMutator;
 import org.pitest.mutationtest.engine.gregor.mutators.experimental.SwitchMutator;
 
+
+import org.pitest.mutationtest.engine.gregor.mutators.augmentation.CheckNullObjectMutator;
+
 public final class Mutator {
 
   private static final Map<String, Iterable<MethodMutatorFactory>> MUTATORS = new LinkedHashMap<>();
@@ -238,6 +241,11 @@ public final class Mutator {
     add("REMOVE_FIRST_MUTATOR", new ArithmeticOperandDeletion(ArithmeticOperandDeletion.MutantType.REMOVE_FIRST_MUTATOR));
     add("REMOVE_LAST_MUTATOR", new ArithmeticOperandDeletion(ArithmeticOperandDeletion.MutantType.REMOVE_LAST_MUTATOR));
     addGroup("AOD", aod());
+    
+    /*
+     * Add object null check mutation
+     */
+    add("NULL_CHECK", CheckNullObjectMutator.CHECK_NULL_OBJECT_MUTATOR);
   }
 
   public static Collection<MethodMutatorFactory> all() {

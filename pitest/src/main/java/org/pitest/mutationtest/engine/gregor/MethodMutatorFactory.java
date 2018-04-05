@@ -29,6 +29,8 @@ import org.objectweb.asm.MethodVisitor;
  * name will be used in the reports created to document and describe the
  * mutation(s) applied.
  * </p>
+ * 
+ * Also implement this interface and InsnSubstitution to replace bytecode on the spot.
  *
  * @author Henry Coles
  */
