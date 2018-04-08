@@ -1,14 +1,14 @@
 package org.pitest.mutationtest.engine.gregor.mutators.augmentation;
 
-
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
+import org.pitest.mutationtest.engine.MutationIdentifier;
 //import org.pitest.mutationtest.engine.gregor.AbstractInsnMutator;
 //import org.pitest.mutationtest.engine.gregor.InsnSubstitution;
 import org.pitest.mutationtest.engine.gregor.MethodInfo;
 import org.pitest.mutationtest.engine.gregor.MethodMutatorFactory;
 import org.pitest.mutationtest.engine.gregor.MutationContext;
-
 
 /* M1 mutation, check for null before dereferencing.
  * 
@@ -20,8 +20,7 @@ public enum CheckNullObjectMutator implements MethodMutatorFactory {
 
     CHECK_NULL_OBJECT_MUTATOR;
     @Override
-    public MethodVisitor create(final MutationContext context, final MethodInfo methodInfo,
-            final MethodVisitor mv) {
+    public MethodVisitor create(final MutationContext context, final MethodInfo methodInfo, final MethodVisitor mv) {
         return new ArithmeticOperatorReplacementMethodVisitor(this, methodInfo, context, mv);
     }
 
@@ -39,7 +38,8 @@ public enum CheckNullObjectMutator implements MethodMutatorFactory {
 
 /*
  * Two ways to do this. One is using Junit assertNotNull.Two is using IFNULL in
- * ASM.Extends ASM MethodVisitor to manipulate bytecode that goes into MethodVisitor.
+ * ASM.Extends ASM MethodVisitor to manipulate bytecode that goes into
+ * MethodVisitor.
  */
 class CheckNullObjectVisitor extends MethodVisitor {
 
@@ -48,13 +48,11 @@ class CheckNullObjectVisitor extends MethodVisitor {
     String mName;
     int line;
 
-    CheckNullObjectVisitor(final MethodMutatorFactory factory, final MutationContext context,
-            final MethodVisitor mv) {
+    CheckNullObjectVisitor(final MethodMutatorFactory factory, final MutationContext context, final MethodVisitor mv) {
         super(Opcodes.ASM6, mv);
         this.factory = factory;
         this.context = context;
     }
-
 
     /*
      * If the bytecode is ALOAD, perform a null check. AALOAD is for object
@@ -62,9 +60,15 @@ class CheckNullObjectVisitor extends MethodVisitor {
      */
     public void visitObjectLoad(int opcode) {
         if (opcode == Opcodes.ALOAD) {
+            final MutationIdentifier muID = this.context.registerMutation(factory, "Checked for NULL object here.");
 
-            addIfNullCondition();
-            //addAssertNullMethod();
+            if (this.context.shouldMutate(muID)) {
+                // addIfNullCondition();
+                addAssertNullMethod();
+
+            }
+        } else {
+            super.visitInsn(opcode);
         }
     }
 
@@ -72,15 +76,31 @@ class CheckNullObjectVisitor extends MethodVisitor {
      * Use JUnit assertNotNull to check object/item for null
      */
     private void addAssertNullMethod() {
-
+        //need to add another ALOAD here, but I don't know the location on the stack.
+        super.visitVarInsn(Opcodes.ALOAD, 0);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, "org/junit/Assert", "assertNull", "(Ljava/lang/Object;)V", false);
+        super.visitVarInsn(Opcodes.ALOAD, 0);
+        super.visitEnd();
     }
 
     /*
-     * Use IFNULL to check object is null
+     * Use IFNULL to check object is null If it is null, throw NullPointerException
+     * I don't know if this will work.
      */
     private void addIfNullCondition() {
+        Label afterIf = new Label();
+        Label beforeIf = new Label();
         super.visitVarInsn(Opcodes.ALOAD, 1);
-        super.visitInsn(Opcodes.IFNULL);
+        super.visitJumpInsn(Opcodes.IFNULL, beforeIf);
+        super.visitLabel(afterIf);
+        super.visitTypeInsn(Opcodes.NEW, "java/lang/NullPointerException");
+        super.visitInsn(Opcodes.DUP);
+        super.visitLdcInsn("Object is null.");
+        super.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/NullPointerException", "<init>", "(Ljava/lang/String;)V",
+                false);
+
+        super.visitEnd();
+
     }
 
 }
