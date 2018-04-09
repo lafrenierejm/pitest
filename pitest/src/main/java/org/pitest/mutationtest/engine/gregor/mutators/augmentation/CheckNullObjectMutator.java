@@ -13,12 +13,22 @@ import org.pitest.mutationtest.engine.gregor.MutationContext;
 /* M1 mutation, check for null before dereferencing.
  * 
  * field dereferencing are called using GETFIELD in java bytecode
- * Invoking object method are called using INVOKEVIRTUAL, INVOKESPECIAL, INVOKEINTERFACE, INVOKESTATIC.
+ * Loading objects are loaded using ALOAD and ALOAD_n 
  *  
  */
 public enum CheckNullObjectMutator implements MethodMutatorFactory {
 
     CHECK_NULL_OBJECT_MUTATOR;
+
+    /*
+     * Create a MethodVisitor class to add null check (CheckNullObjectVisitor)
+     * 
+     * @see
+     * org.pitest.mutationtest.engine.gregor.MethodMutatorFactory#create(org.pitest.
+     * mutationtest.engine.gregor.MutationContext,
+     * org.pitest.mutationtest.engine.gregor.MethodInfo,
+     * org.objectweb.asm.MethodVisitor)
+     */
     @Override
     public MethodVisitor create(final MutationContext context, final MethodInfo methodInfo, final MethodVisitor mv) {
         return new ArithmeticOperatorReplacementMethodVisitor(this, methodInfo, context, mv);
@@ -26,12 +36,12 @@ public enum CheckNullObjectMutator implements MethodMutatorFactory {
 
     @Override
     public String getGloballyUniqueId() {
-        return this.getClass().getName();
+        return this.getClass().getName() + "_" + name();
     }
 
     @Override
     public String getName() {
-        return name();
+        return "Check if object is null - " + name();
     }
 
 }
@@ -45,8 +55,6 @@ class CheckNullObjectVisitor extends MethodVisitor {
 
     private final MethodMutatorFactory factory;
     private final MutationContext context;
-    String mName;
-    int line;
 
     CheckNullObjectVisitor(final MethodMutatorFactory factory, final MutationContext context, final MethodVisitor mv) {
         super(Opcodes.ASM6, mv);
@@ -59,7 +67,7 @@ class CheckNullObjectVisitor extends MethodVisitor {
      * reference. ALOAD is for object.
      */
     public void visitObjectLoad(int opcode) {
-        if (opcode == Opcodes.ALOAD) {
+        if (opcode == Opcodes.ALOAD || opcode == Opcodes.GETFIELD) {
             final MutationIdentifier muID = this.context.registerMutation(factory, "Checked for NULL object here.");
 
             if (this.context.shouldMutate(muID)) {
@@ -76,11 +84,10 @@ class CheckNullObjectVisitor extends MethodVisitor {
      * Use JUnit assertNotNull to check object/item for null
      */
     private void addAssertNullMethod() {
-        //need to add another ALOAD here, but I don't know the location on the stack.
-        super.visitVarInsn(Opcodes.ALOAD, 0);
+        // need to add another ALOAD here, but I don't know the location on the stack.
+        super.visitInsn(Opcodes.DUP);
         super.visitMethodInsn(Opcodes.INVOKESTATIC, "org/junit/Assert", "assertNull", "(Ljava/lang/Object;)V", false);
-        super.visitVarInsn(Opcodes.ALOAD, 0);
-        super.visitEnd();
+        // super.visitEnd();
     }
 
     /*
@@ -88,19 +95,28 @@ class CheckNullObjectVisitor extends MethodVisitor {
      * I don't know if this will work.
      */
     private void addIfNullCondition() {
-        Label afterIf = new Label();
+        
         Label beforeIf = new Label();
+        Label afterIf;
         super.visitVarInsn(Opcodes.ALOAD, 1);
-        super.visitJumpInsn(Opcodes.IFNULL, beforeIf);
-        super.visitLabel(afterIf);
-        super.visitTypeInsn(Opcodes.NEW, "java/lang/NullPointerException");
-        super.visitInsn(Opcodes.DUP);
-        super.visitLdcInsn("Object is null.");
-        super.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/NullPointerException", "<init>", "(Ljava/lang/String;)V",
-                false);
+        super.visitJumpInsn(Opcodes.IFNULL, afterIf);
+        super.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/NullPointerException", "<init>",
+                "(Ljava/lang/String;)V", false);
 
         super.visitEnd();
 
+    }
+
+    /*
+     * We don't introduce any new variable, just one computation, so the maxStack
+     * should increase by 1. In FrameOptions.java, the ClassWriter already has
+     * COMPUTE_FRAME so maybe this stack size will be automatically calculated.
+     * 
+     * @see org.objectweb.asm.MethodVisitor#visitMaxs(int, int)
+     */
+    @Override
+    public void visitMaxs(int maxStack, int maxLocals) {
+        super.visitMaxs(maxStack + 1, maxLocals);
     }
 
 }

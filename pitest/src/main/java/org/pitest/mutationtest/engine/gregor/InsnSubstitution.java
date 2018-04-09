@@ -16,6 +16,9 @@ package org.pitest.mutationtest.engine.gregor;
 
 import org.objectweb.asm.MethodVisitor;
 
+/*
+ * Substitute an opcode with another opcode. This can delete an operation.
+ */
 public class InsnSubstitution implements ZeroOperandMutation {
 
   private final int    replacementOpcode;
