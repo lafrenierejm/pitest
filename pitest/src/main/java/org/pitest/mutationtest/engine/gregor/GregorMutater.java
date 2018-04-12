@@ -137,6 +137,15 @@ public class GregorMutater implements Mutater {
 
   }
 
+  /**
+   * Get the bytesource array.
+   *
+   * @return the bytesource array
+   */
+  public ClassByteArraySource getByteSource() {
+      return this.byteSource;
+  }
+
   private static Predicate<MethodMutatorFactory> isMutatorFor(
       final MutationIdentifier id) {
     return a -> id.getMutator().equals(a.getGloballyUniqueId());
