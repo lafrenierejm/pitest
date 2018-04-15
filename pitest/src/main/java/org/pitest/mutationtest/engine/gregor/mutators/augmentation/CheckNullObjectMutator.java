@@ -9,7 +9,6 @@ import org.pitest.mutationtest.engine.MutationIdentifier;
 import org.pitest.mutationtest.engine.gregor.MethodInfo;
 import org.pitest.mutationtest.engine.gregor.MethodMutatorFactory;
 import org.pitest.mutationtest.engine.gregor.MutationContext;
-import org.pitest.mutationtest.engine.gregor.InsnSubstitution;
 
 /* M1 mutation, check for null before dereferencing.
  * 
