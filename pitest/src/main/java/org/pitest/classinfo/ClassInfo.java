@@ -42,6 +42,9 @@ public class ClassInfo {
   private final String                 sourceFile;
   private final Map<ClassName, Object> classAnnotationValues;
 
+  /**
+   * Constructor that populates all information about the class.
+   */
   public ClassInfo(final ClassPointer superClass,
       final ClassPointer outerClass, final ClassInfoBuilder builder) {
     this.superClass = superClass;
