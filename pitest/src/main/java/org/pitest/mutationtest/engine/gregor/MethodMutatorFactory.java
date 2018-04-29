@@ -15,6 +15,7 @@
 package org.pitest.mutationtest.engine.gregor;
 
 import org.objectweb.asm.MethodVisitor;
+import org.pitest.classinfo.ClassByteArraySource;
 
 /**
  * A <code>MethodMutatorFactory</code> is a factory creating method mutating
@@ -36,8 +37,34 @@ import org.objectweb.asm.MethodVisitor;
  */
 public interface MethodMutatorFactory {
 
+  /**
+   * Constructor that does not take byteSource.
+   *
+   * @param content
+   * @param methodInfo
+   * @param methodVisitor
+   */
   MethodVisitor create(MutationContext context,
-      MethodInfo methodInfo, MethodVisitor methodVisitor);
+      MethodInfo methodInfo, MethodVisitor methodVisitor) {
+    throw new AssertionError(
+        "Suppress non-bytesource constructor for override only.");
+  };
+
+  /**
+   * Constructor that takes byteSource.
+   *
+   * @param context
+   * @param content
+   * @param methodInfo
+   * @param methodVisitor
+   * @param byteSource
+   */
+  MethodVisitor create(MutationContext context,
+      MethodInfo methodInfo, MethodVisitor methodVisitor,
+      ClasArrayByteSource bytesource) {
+    throw new AssertionError(
+        "Suppress bytesource constructor for override only.");
+  };
 
   String getGloballyUniqueId();
 
