@@ -22,6 +22,10 @@ import org.pitest.mutationtest.engine.gregor.MethodInfo;
 import org.pitest.mutationtest.engine.gregor.MethodMutatorFactory;
 import org.pitest.mutationtest.engine.gregor.MutationContext;
 
+/**
+ * Replaces constructor calls with null, using MethodClassVisit() to identify
+ * constructor calls.
+ */
 public enum ConstructorCallMutator implements MethodMutatorFactory {
 
   CONSTRUCTOR_CALL_MUTATOR;
