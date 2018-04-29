@@ -80,6 +80,12 @@ public class GregorMutater implements Mutater {
 
   }
 
+  /**
+   * Function interface, return a list of input and a list of output
+   *
+   * @param context input to be used in the function findMutationForBytes
+   * @return        a function interface
+   */
   private Function<byte[], List<MutationDetails>> findMutations(
       final ClassContext context) {
     return bytes -> findMutationsForBytes(context, bytes);
