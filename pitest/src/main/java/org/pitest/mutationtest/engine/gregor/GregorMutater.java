@@ -41,6 +41,9 @@ import org.pitest.mutationtest.engine.Mutater;
 import org.pitest.mutationtest.engine.MutationDetails;
 import org.pitest.mutationtest.engine.MutationIdentifier;
 
+/**
+ * Use byteSource to replace method names and descriptor in code.
+ */
 public class GregorMutater implements Mutater {
 
   private final Map<String, String>       computeCache   = new HashMap<>();
