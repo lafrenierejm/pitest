@@ -11,9 +11,13 @@ import org.pitest.mutationtest.engine.gregor.MethodInfo;
 import org.pitest.mutationtest.engine.gregor.MethodMutatorFactory;
 import org.pitest.mutationtest.engine.gregor.MutationContext;
 
+import org.pitest.mutationtest.engine.gregor.config.GregorEngineFactory;
+import org.pitest.mutationtest.engine.gregor.GregorMutationEngine;
+import org.pitest.mutationtest.engine.gregor.GregorMutater;
+
 public enum CallAnotherOverloadingMethod implements MethodMutatorFactory {
 
-    CALL_OVERLOADING_METHOD;
+    REPLACE_WITH_OVERLOADING_METHOD;
 
     @Override
     public MethodVisitor create(MutationContext context, MethodInfo methodInfo, MethodVisitor methodVisitor) {
@@ -34,14 +38,14 @@ public enum CallAnotherOverloadingMethod implements MethodMutatorFactory {
      * INVOKESPECIAL, INVOKEINTERFACE, INVOKESTATIC. Overloading methods are method
      * that have the same name and return type, but different parameters.
      * INVOKEVIRTUAL utd/Add.add(III)I INVOKEVIRTUAL utd/Add.add(II)I
-     * 
+     *
      * Meaning: static method vs non-static method can overload each other ->
      * INVOKEVIRTUAL and INVOKESTATIC package name is the same (overload, not
      * override) same classname and method name (utd/Add.add) same return type
      * different descriptor/parameter.
-     * 
+     *
      * This should work with constructor as well.
-     * 
+     *
      * How do I dissect the method descriptor?
      */
 
@@ -62,31 +66,32 @@ class ReplaceWithOverloadingMethod extends MethodVisitor {
      * If the INVOKE keywords exist, then start replacing it with other overloading
      * methods.
      */
-    public void visitInvokeKeyword(int opcode) {
+    @Override
+    public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
         if (opcode == Opcodes.INVOKESPECIAL || opcode == Opcodes.INVOKEINTERFACE || opcode == Opcodes.INVOKESTATIC
                 || opcode == Opcodes.INVOKEVIRTUAL || opcode == Opcodes.INVOKEDYNAMIC) {
             final MutationIdentifier muID = this.context.registerMutation(factory,
-                    "Replace with overloading method here.");
+                    "Replaced with overloading method here.");
 
             if (this.context.shouldMutate(muID)) {
-                //
-                replaceMethodDescriptor(opcode);
+                replaceMethodDescriptorMutation(opcode, owner, name, desc, itf);
             }
         } else {
-            super.visitInsn(opcode);
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
         }
     }
 
-    /*
-     * Inject bytecode to replace method descriptor.
+    /**
+     * Somehow get bytesource from the current class and extract all overloading methods of the current method.
+     *
+     * @param owner TODO
+     * @param name TODO
+     * @param desc TODO
+     * @param itf TODO
      */
-    private void replaceMethodDescriptor(int opcode) {
-        // TODO how do I do this?
-        super.vistMethodInsn(opcode, ..., "<init>",   ,false);
-        
-        /*
-         * use the same opcode, same name. Just change the descriptor
-         */
+    private void replaceMethodDescriptorMutation(int opcode, String owner, String name, String desc, boolean itf) {
+        // I should use bytesource from GregorEngineFactory.java
+        // -> GregorMutationEngine.java -> GregorMutater.java
 
     }
 
