@@ -17,6 +17,9 @@ package org.pitest.mutationtest.engine.gregor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+/**
+ * Extract different parts of a method.
+ */
 public class MethodInfo {
 
   private final ClassInfo owningClass;
@@ -54,26 +57,56 @@ public class MethodInfo {
         + this.methodDescriptor + ",  name=" + this.methodName + "]";
   }
 
+  /**
+   * Check whether or not this method is static.
+   *
+   * @return true iff the method is static
+   */
   public boolean isStatic() {
     return ((this.access & Opcodes.ACC_STATIC) != 0);
   }
 
+  /**
+   * Check whether or not this method is synthetic.
+   *
+   * @return true iff the method is synthetic
+   */
   public boolean isSynthetic() {
     return ((this.access & Opcodes.ACC_SYNTHETIC) != 0);
   }
 
+  /**
+   * Check whether or not this method is a constructor.
+   *
+   * @return true iff the method is a constructor
+   */
   public boolean isConstructor() {
     return isConstructor(this.methodName);
   }
 
+  /**
+   * Check whether or not this method contains "<init>" in the class file (constructor).
+   *
+   * @return true iff the method contains "<init>"
+   */
   public static boolean isConstructor(final String methodName) {
     return "<init>".equals(methodName);
   }
 
+  /**
+   * Get this method's return type.
+   *
+   * @return the return type of the method
+   */
   public Type getReturnType() {
     return Type.getReturnType(this.methodDescriptor);
   }
 
+  /**
+   * Check whether or not a method returns void.
+   *
+   * @return true iff the method returns void.
+   */
   public static boolean isVoid(final String desc) {
     return Type.getReturnType(desc).equals(Type.VOID_TYPE);
   }
