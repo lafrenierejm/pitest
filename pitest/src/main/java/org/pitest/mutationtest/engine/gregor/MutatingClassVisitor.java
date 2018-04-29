@@ -22,18 +22,28 @@ import java.util.function.Predicate;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.pitest.classinfo.ClassByteArraySource;
 import org.pitest.classinfo.ClassName;
 import org.pitest.mutationtest.engine.Location;
 import org.pitest.mutationtest.engine.MethodName;
 import org.pitest.mutationtest.engine.gregor.analysis.InstructionTrackingMethodVisitor;
 import org.pitest.mutationtest.engine.gregor.blocks.BlockTrackingMethodDecorator;
 
+/**
+ * Visit a class and create mutations.
+ */
 class MutatingClassVisitor extends ClassVisitor {
 
   private final Predicate<MethodInfo>    filter;
   private final ClassContext              context;
   private final Set<MethodMutatorFactory> methodMutators = new HashSet<>();
+  private final ClassByteArraySource byteSource;
 
+  /**
+   * Constructor that does not take byteSource.
+   * <p>
+   * byteSource is set to null.
+   */
   MutatingClassVisitor(final ClassVisitor delegateClassVisitor,
       final ClassContext context, final Predicate<MethodInfo> filter,
       final Collection<MethodMutatorFactory> mutators) {
@@ -41,6 +51,21 @@ class MutatingClassVisitor extends ClassVisitor {
     this.context = context;
     this.filter = filter;
     this.methodMutators.addAll(mutators);
+    this.byteSource = null;
+  }
+
+  /**
+   * Constructor that takes byteSource.
+   */
+  MutatingClassVisitor(final ClassVisitor delegateClassVisitor,
+      final ClassContext context, final Predicate<MethodInfo> filter,
+      final Collection<MethodMutatorFactory> mutators,
+      final ClassByteArraySource byteSource) {
+    super(Opcodes.ASM6, delegateClassVisitor);
+    this.context = context;
+    this.filter = filter;
+    this.methodMutators.addAll(mutators);
+    this.byteSource = byteSource;
   }
 
   @Override
@@ -88,7 +113,12 @@ class MutatingClassVisitor extends ClassVisitor {
 
     MethodVisitor next = methodVisitor;
     for (final MethodMutatorFactory each : this.methodMutators) {
-      next = each.create(methodContext, methodInfo, next);
+      if (this.byteSource) {
+        next = each.create(methodContext, methodInfo, next, this.byteSource);
+      }
+      else {
+        next = each.create(methodContext, methodInfo, next);
+      }
     }
 
     return new InstructionTrackingMethodVisitor(wrapWithDecorators(
