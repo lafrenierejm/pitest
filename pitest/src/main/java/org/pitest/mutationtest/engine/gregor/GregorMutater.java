@@ -91,6 +91,15 @@ public class GregorMutater implements Mutater {
     return bytes -> findMutationsForBytes(context, bytes);
   }
 
+  /**
+   * Used as a lambda function for findMutations. Read the stream of
+   * byte[] from a class then save the mutations in an ArrayList in
+   * ClassContext object. Then return the list.
+   *
+   * @param context       context in which to store the mutations
+   * @param classToMutate a byte array to scan for possible mutations
+   * @return              a list of mutations saved in the "context" parameter
+   */
   private List<MutationDetails> findMutationsForBytes(
       final ClassContext context, final byte[] classToMutate) {
 
