@@ -81,6 +81,11 @@ class ClassContext implements BlockCounter {
     return a -> a.matches(newId);
   }
 
+  /**
+   * Return a collection of mutations.
+   *
+   * @return the collection of mutations
+   */
   public Collection<MutationDetails> getCollectedMutations() {
     return this.mutations;
   }
