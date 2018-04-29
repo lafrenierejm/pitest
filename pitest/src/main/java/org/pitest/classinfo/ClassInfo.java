@@ -26,6 +26,10 @@ import org.objectweb.asm.Opcodes;
 import org.pitest.functional.FCollection;
 import java.util.Optional;
 
+/**
+ * Create a ClasInfo object from superClass, outerClass and a ClassInfoBuilder.
+ * This is not the same as ClassInfo.java in package engine.gregor.
+ */
 public class ClassInfo {
 
   private final ClassIdentifier        id;
